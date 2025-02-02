@@ -1,0 +1,153 @@
+package clientname.gui;
+
+import java.awt.Color;
+
+import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.ResourceLocation;
+
+public class SplashProgress {
+	
+	private static final int MAX = 10;
+	private static int PROGRESS = 0;
+	private static String CURRENT = "";
+	private static ResourceLocation splash;
+	private static UnicodeFontRenderer ufr;
+	
+	public static void update() {
+		if(Minecraft.getMinecraft() == null || Minecraft.getMinecraft().getLanguageManager() == null) {
+			return;
+		}
+		drawSplash(Minecraft.getMinecraft().getTextureManager());
+	}
+	
+	public static void setProgress(int givenProgress, String givenText) {
+		PROGRESS = givenProgress;
+		CURRENT = givenText;
+		update();
+	}
+	
+	public static void drawSplash(TextureManager tm) {
+	    Minecraft mc = Minecraft.getMinecraft();
+	    ScaledResolution scaledResolution = new ScaledResolution(mc);
+
+	    int screenWidth = scaledResolution.getScaledWidth();
+	    int screenHeight = scaledResolution.getScaledHeight();
+
+	    // Framebuffer erstellen
+	    Framebuffer framebuffer = new Framebuffer(screenWidth, screenHeight, true);
+	    framebuffer.bindFramebuffer(false);
+
+	    // Orthografische Projektion einrichten
+	    GlStateManager.matrixMode(GL11.GL_PROJECTION);
+	    GlStateManager.loadIdentity();
+	    GlStateManager.ortho(0.0, screenWidth, screenHeight, 0.0, -1.0, 1.0);
+	    GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+	    GlStateManager.loadIdentity();
+	    GlStateManager.translate(0.0F, 0.0F, -1.0F);
+
+	    GlStateManager.disableLighting();
+	    GlStateManager.disableFog();
+	    GlStateManager.disableDepth();
+	    GlStateManager.enableTexture2D();
+
+	    // Splash-Bild laden
+	    if (splash == null) {
+	        splash = new ResourceLocation("clientname/splash.png");
+	    }
+	    tm.bindTexture(splash);
+
+	    GlStateManager.resetColor();
+	    GlStateManager.color(1.0F, 1.0F, 1.0F);
+
+	    // Splash-Bild dynamisch zentriert und skaliert zeichnen
+	    drawCenteredImage(screenWidth, screenHeight);
+
+	    // Fortschrittsanzeige zeichnen
+	    drawProgress();
+
+	    framebuffer.unbindFramebuffer();
+	    framebuffer.framebufferRender(screenWidth, screenHeight);
+
+	    GlStateManager.enableAlpha();
+	    GlStateManager.alphaFunc(516, 0.1F);
+
+	    mc.updateDisplay();
+	}
+
+	private static void drawCenteredImage(int screenWidth, int screenHeight) {
+	    int imageWidth = 1920;  // Original-Bildbreite
+	    int imageHeight = 1080; // Original-Bildhöhe
+
+	    // Berechne das Bildseitenverhältnis
+	    float imageAspect = (float) imageWidth / imageHeight;
+	    float screenAspect = (float) screenWidth / screenHeight;
+
+	    int drawWidth, drawHeight;
+
+	    // Passe die Größe an das kleinere Seitenverhältnis an
+	    if (screenAspect > imageAspect) {
+	        drawHeight = screenHeight;
+	        drawWidth = (int) (screenHeight * imageAspect);
+	    } else {
+	        drawWidth = screenWidth;
+	        drawHeight = (int) (screenWidth / imageAspect);
+	    }
+
+	    // Berechne die zentrierten Positionen
+	    int x = (screenWidth - drawWidth) / 2;
+	    int y = (screenHeight - drawHeight) / 2;
+
+	    // Zeichne das Bild
+	    Gui.drawScaledCustomSizeModalRect(
+	        x, y,                    // Zentrierte Startposition
+	        0, 0,                    // Ursprung des Bildes
+	        imageWidth, imageHeight, // Originalgröße des Bildes
+	        drawWidth, drawHeight,   // Dynamisch berechnete Größe
+	        imageWidth, imageHeight  // Originalgröße für Texturkoordinaten
+	    );
+	}
+
+	
+	private static void drawProgress() {
+		if(Minecraft.getMinecraft().gameSettings == null || Minecraft.getMinecraft().getTextureManager() == null) {
+			return;
+		}
+		
+		if (ufr == null) {
+			ufr = UnicodeFontRenderer.getFontOnPC("Arial", 20);
+		}
+		
+		ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
+		
+		double nProgress = (double)PROGRESS;
+		double calc = (nProgress / MAX) * sr.getScaledWidth();
+		
+		Gui.drawRect(0,  sr.getScaledHeight() - 35, sr.getScaledWidth(), sr.getScaledHeight(), new Color(0, 0, 0, 50).getRGB());
+		
+		GlStateManager.resetColor();
+		resetTextureState();
+		
+		ufr.drawString(CURRENT, 20, sr.getScaledHeight() -25, 0xFFFFFFFF);
+		
+		String step = PROGRESS + "/" + MAX;
+		ufr.drawString(step, sr.getScaledWidth() - 20 - ufr.getStringWidth(step),  sr.getScaledHeight() - 25,  0xe1e1e1FF);
+		
+		GlStateManager.resetColor();
+		resetTextureState();
+		
+		Gui.drawRect(0, sr.getScaledHeight() - 2,  (int)calc, sr.getScaledHeight(), new Color(149, 201, 144).getRGB());
+		
+		Gui.drawRect(0, sr.getScaledHeight() -2, sr.getScaledWidth(), sr.getScaledHeight(), new Color(0, 0, 0, 10).getRGB());
+	}
+	
+	private static void resetTextureState() {
+		GlStateManager.textureState[GlStateManager.activeTextureUnit].textureName = -1;
+	}
+}

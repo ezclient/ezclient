@@ -1,0 +1,14 @@
+package clientname;
+
+public class client {
+	
+	private static final Client INSTANCE = new Client();
+	
+	public void init() {
+		
+	}
+	
+	public void shutdown() {
+		
+	}
+}

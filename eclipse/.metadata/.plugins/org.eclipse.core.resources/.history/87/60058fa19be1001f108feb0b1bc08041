@@ -1,0 +1,103 @@
+package clientname.gui;
+
+import java.awt.Color;
+
+import org.lwjgl.opengl.GL11;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.ResourceLocation;
+
+public class SplashProgress {
+
+    private static final int MAX = 10; // Maximale Schritte
+    private static int progress = 0; // Aktueller Fortschritt
+    private static String currentText = ""; // Textanzeige
+    private static ResourceLocation splash;
+    private static UnicodeFontRenderer fontRenderer;
+
+    public static void update() {
+        if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().getLanguageManager() == null) {
+            return;
+        }
+        drawSplash(Minecraft.getMinecraft().getTextureManager());
+    }
+
+    public static void setProgress(int givenProgress, String givenText) {
+        progress = givenProgress;
+        currentText = givenText;
+        update();
+    }
+
+    public static void drawSplash(TextureManager textureManager) {
+        ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+        int screenWidth = scaledResolution.getScaledWidth();
+        int screenHeight = scaledResolution.getScaledHeight();
+
+        // Framebuffer erstellen
+        Framebuffer framebuffer = new Framebuffer(screenWidth, screenHeight, true);
+        framebuffer.bindFramebuffer(false);
+
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.loadIdentity();
+        GlStateManager.ortho(0.0D, screenWidth, screenHeight, 0.0D, 1000.0D, 3000.0D);
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        GlStateManager.loadIdentity();
+        GlStateManager.translate(0.0F, 0.0F, -2000.0F);
+        GlStateManager.disableLighting();
+        GlStateManager.disableFog();
+        GlStateManager.disableDepth();
+        GlStateManager.enableTexture2D();
+
+        if (splash == null) {
+            splash = new ResourceLocation("clientname/splash.png");
+        }
+        textureManager.bindTexture(splash);
+
+        // Hintergrund zeichnen
+        Gui.drawScaledCustomSizeModalRect(0, 0, 0, 0, 1920, 1080, screenWidth, screenHeight, 1920, 1080);
+
+        // Fortschrittsbalken zeichnen
+        drawProgress(screenWidth, screenHeight);
+
+        framebuffer.unbindFramebuffer();
+        framebuffer.framebufferRender(screenWidth, screenHeight);
+
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.1F);
+
+        Minecraft.getMinecraft().updateDisplay();
+    }
+
+    private static void drawProgress(int screenWidth, int screenHeight) {
+        if (Minecraft.getMinecraft().gameSettings == null || Minecraft.getMinecraft().getTextureManager() == null) {
+            return;
+        }
+
+        if (fontRenderer == null) {
+            fontRenderer = UnicodeFontRenderer.getFontOnPC("Arial", 20);
+        }
+
+        double progressPercentage = (double) progress / MAX;
+        int progressBarWidth = (int) (screenWidth * progressPercentage);
+
+        // Hintergrund des Fortschrittsbereichs
+        Gui.drawRect(0, screenHeight - 40, screenWidth, screenHeight, new Color(0, 0, 0, 100).getRGB());
+
+        // Fortschrittsbalken
+        Gui.drawRect(0, screenHeight - 20, progressBarWidth, screenHeight - 10, new Color(149, 201, 144).getRGB());
+
+        // Rand des Fortschrittsbalkens
+        Gui.drawRect(0, screenHeight - 20, screenWidth, screenHeight - 10, new Color(0, 0, 0, 50).getRGB());
+
+        // Textanzeige
+        fontRenderer.drawCenteredString(currentText, screenWidth / 2, screenHeight - 35, 0xFFFFFFFF);
+
+        String progressText = progress + "/" + MAX;
+        fontRenderer.drawString(progressText, screenWidth - fontRenderer.getStringWidth(progressText) - 10, screenHeight - 35, 0xFFFFFFFF);
+    }
+}

@@ -1,0 +1,12 @@
+package clientname.gui;
+
+import net.minecraft.util.ResourceLocation;
+
+public class SplashProgress {
+	
+	private static final int MAX = 7;
+	private static int PROGRESS = 0;
+	private static String CURRENT = "";
+	private static ResourceLocation splash;
+	private static UnicodeFontRenderer ufr;
+}

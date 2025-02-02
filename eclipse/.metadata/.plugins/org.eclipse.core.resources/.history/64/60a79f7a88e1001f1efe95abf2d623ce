@@ -1,0 +1,31 @@
+package clientname;
+
+import net.arikia.dev.drpc.DiscordEventHandlers;
+import net.arikia.dev.drpc.DiscordUser;
+import net.arikia.dev.drpc.callbacks.ReadyCallback;
+
+public class DiscordRP {
+	
+	private boolean running = true;
+	private long created = 0;
+	
+	public void start() {
+		this.created = System.currentTimeMillis();
+		
+		DiscordEventHandlers handlers = new DiscordEventHandlers.Builder().setReadyEventHandler(new ReadyCallback() {
+			
+			@Override
+			public void apply(DiscordUser arg0) {
+				
+			}
+		}).build();
+	}
+	
+	public void shutdown() {
+		
+	}
+	
+	public void update(String firstLine, String secondLine) {
+		
+	}
+}

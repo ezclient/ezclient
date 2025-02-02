@@ -1,0 +1,19 @@
+package clientname;
+
+public class DiscordRP {
+	
+	private boolean running = true;
+	private long create = 0;
+	
+	public void start() {
+		this.created = System.currentTimeInMillis();
+	}
+	
+	public void shutdown() {
+		
+	}
+	
+	public void update(String firstLine, String secondLine) {
+		
+	}
+}

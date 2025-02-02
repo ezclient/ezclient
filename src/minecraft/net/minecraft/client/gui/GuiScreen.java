@@ -556,16 +556,10 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
         this.initGui();
     }
 
-    /**
-     * Set the gui to the specified width and height
-     *  
-     * @param w The width of the screen
-     * @param h The height of the screen
-     */
-    public void setGuiSize(int w, int h)
+    public void a(int p_a_1_, int p_a_2_)
     {
-        this.width = w;
-        this.height = h;
+        this.width = p_a_1_;
+        this.height = p_a_2_;
     }
 
     /**

@@ -1,0 +1,45 @@
+package clientname.gui;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.ResourceLocation;
+
+public class SplashProgress {
+	
+	private static final int MAX = 7;
+	private static int PROGRESS = 0;
+	private static String CURRENT = "";
+	private static ResourceLocation splash;
+	private static UnicodeFontRenderer ufr;
+	
+	public static void update() {
+		if(Minecraft.getMinecraft() == null || Minecraft.getMinecraft().getLanguageManager() == null) {
+			return;
+		}
+		drawSplash(Minecraft.getMinecraft().getTextureManager());
+	}
+	
+	public static void setProgress(int givenProgress, String givenText) {
+		PROGRESS = givenProgress;
+		CURRENT = givenText;
+		update();
+	}
+	
+	public static void drawSplash(TextureManager tm) {
+		
+		ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+		int scaleFactor = scaledResolution.getScaleFactor();
+		
+		Framebuffer framebuffer = new Framebuffer(scaledResolution.getScaledWidth() * scaleFactor, scaledResolution.getScaledHeight() * scaleFactor, true);
+	}
+	
+	private static void drawProgress() {
+		
+	}
+	
+	private static void resetTextureState() {
+		
+	}
+}

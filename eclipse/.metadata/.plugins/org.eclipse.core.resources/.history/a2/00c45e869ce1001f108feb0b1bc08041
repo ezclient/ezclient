@@ -1,0 +1,104 @@
+package clientname.gui;
+
+import org.lwjgl.opengl.GL11;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.util.ResourceLocation;
+
+public class SplashProgress {
+	
+	private static final int MAX = 10;
+	private static int PROGRESS = 0;
+	private static String CURRENT = "";
+	private static ResourceLocation splash;
+
+	private static float alpha = 0.0F;  // Transparenzwert (0.0 = unsichtbar, 1.0 = voll sichtbar)
+	private static boolean fadeOut = false;  
+	private static long displayTime = 0; // Speichert die Zeit, wann der Screen fertig geladen wurde
+
+	public static void update() {
+		if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().getLanguageManager() == null) {
+			return;
+		}
+		drawSplash(Minecraft.getMinecraft().getTextureManager());
+	}
+	
+	public static void setProgress(int givenProgress, String givenText) {
+		PROGRESS = givenProgress;
+		CURRENT = givenText;
+
+		// Sobald 100% erreicht ist, wird die Wartezeit gestartet
+		if (PROGRESS >= MAX && displayTime == 0) {
+			displayTime = System.currentTimeMillis();
+		}
+
+		update();
+	}
+	
+	public static void drawSplash(TextureManager tm) {
+		ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+		int scaleFactor = scaledResolution.getScaleFactor();
+		
+		Framebuffer framebuffer = new Framebuffer(scaledResolution.getScaledWidth() * scaleFactor, scaledResolution.getScaledHeight() * scaleFactor, true);
+		framebuffer.bindFramebuffer(false);
+		
+		GlStateManager.matrixMode(GL11.GL_PROJECTION);
+		GlStateManager.loadIdentity();
+		GlStateManager.ortho(0.0D, (double)scaledResolution.getScaledWidth(), (double)scaledResolution.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
+		GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+		GlStateManager.loadIdentity();
+		GlStateManager.translate(0.0F,  0.0F, -2000.0F);
+		GlStateManager.disableLighting();
+		GlStateManager.disableFog();
+		GlStateManager.disableDepth();
+		GlStateManager.enableTexture2D();
+		
+		if (splash == null) {
+			splash = new ResourceLocation("clientname/splash.png");
+		}
+		
+		tm.bindTexture(splash);
+		
+		// **Fade-In & Fade-Out-Logik (jetzt normal & smooth)**
+		if (fadeOut) {
+			alpha -= 0.05F; // Glattes, normales Ausblenden
+			if (alpha <= 0.0F) {
+				alpha = 0.0F;
+			}
+		} else {
+			alpha += 0.05F; // Glattes, normales Einblenden
+			if (alpha >= 1.0F) {
+				alpha = 1.0F;
+			}
+		}
+
+		// Starte Fade-Out, wenn 5 Sekunden vergangen sind
+		if (displayTime > 0 && System.currentTimeMillis() - displayTime >= 5000) {
+			fadeOut = true;
+		}
+
+		GlStateManager.enableBlend();
+		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
+		// **Schwarzen Hintergrund rendern**
+		GlStateManager.color(0.0F, 0.0F, 0.0F, 1.0F);
+		Gui.drawRect(0, 0, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight(), 0xFF000000);
+		
+		// **Splash-Bild mit Alpha-Kanal rendern**
+		GlStateManager.color(1.0F, 1.0F, 1.0F, alpha);
+		Gui.drawScaledCustomSizeModalRect(0, 0, 0, 0, 1920, 1080, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight(), 1920, 1080);
+		
+		framebuffer.unbindFramebuffer();
+		framebuffer.framebufferRender(scaledResolution.getScaledWidth() * scaleFactor, scaledResolution.getScaledHeight() * scaleFactor);
+		
+		GlStateManager.disableBlend();
+		GlStateManager.enableAlpha();
+		GlStateManager.alphaFunc(516, 0.1F);
+		
+		Minecraft.getMinecraft().updateDisplay();
+	}
+}
