@@ -15,6 +15,7 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
 import clientname.Client;
+import clientname.event.impl.ClientTickEvent;
 import clientname.gui.SplashProgress;
 
 import java.awt.image.BufferedImage;
@@ -2281,7 +2282,10 @@ public class Minecraft implements IThreadListener, IPlayerUsage
             this.mcProfiler.endStartSection("pendingConnection");
             this.myNetworkManager.processReceivedPackets();
         }
-
+        
+        ClientTickEvent cte = new ClientTickEvent();
+        cte.call();
+        
         this.mcProfiler.endSection();
         this.systemTime = getSystemTime();
     }
